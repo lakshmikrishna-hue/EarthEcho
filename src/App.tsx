@@ -8,6 +8,7 @@ import {
   ArrowLeftRight,
   Contrast,
   Grid3x3,
+  Image as ImageIcon,
   Pause,
   Play,
   SlidersHorizontal,
@@ -49,6 +50,31 @@ type UploadSlotKey =
   | 'night-lights-2023'
   | 'lightning'
   | 'forest-height';
+
+const SAMPLE_FILES: Record<UploadSlotKey, { file: string; label: string }> = {
+  'night-lights-2012': {
+    file: 'night-2012.jpg',
+    label: 'Sample frame (2012)',
+  },
+  'night-lights-2023': {
+    file: 'night-2023.jpg',
+    label: 'Sample frame (2023)',
+  },
+  lightning: {
+    file: 'lightning.jpg',
+    label: 'Sample frame',
+  },
+  'forest-height': {
+    file: 'forest.jpg',
+    label: 'Sample frame',
+  },
+};
+
+function getSampleFrameUrl(filename: string): string {
+  const base = import.meta.env.BASE_URL || '/';
+  const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+  return `${normalizedBase}samples/${filename}`;
+}
 
 export default function App() {
   // Active dataset preset ('night-lights' | 'lightning' | 'forest-height')
@@ -416,6 +442,35 @@ export default function App() {
     }
 
     e.target.value = '';
+  };
+
+  const handleLoadSample = (slot: UploadSlotKey) => {
+    const prevUrl = slotUrlsRef.current[slot];
+    if (prevUrl) {
+      URL.revokeObjectURL(prevUrl);
+      slotUrlsRef.current[slot] = null;
+    }
+
+    const sample = SAMPLE_FILES[slot];
+    const frame: UploadedFrame = {
+      src: getSampleFrameUrl(sample.file),
+      label: sample.label,
+    };
+
+    stopPlaybackAndResetCol();
+    setImageNotice(null);
+
+    if (slot === 'night-lights-2012') {
+      setNightLights2012(frame);
+      setNightLightsActiveYear('2012');
+    } else if (slot === 'night-lights-2023') {
+      setNightLights2023(frame);
+      setNightLightsActiveYear('2023');
+    } else if (slot === 'lightning') {
+      setLightningFrame(frame);
+    } else {
+      setForestFrame(frame);
+    }
   };
 
   const handleClearSlot = (slot: UploadSlotKey) => {
@@ -830,6 +885,36 @@ export default function App() {
 
                 <button
                   type="button"
+                  onClick={() => handleLoadSample('night-lights-2012')}
+                  aria-label="Try 2012 sample frame for Night Lights"
+                  className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap shrink-0 cursor-pointer transition-colors"
+                  style={{
+                    backgroundColor: 'var(--bg-surface)',
+                    color: 'var(--accent-primary)',
+                    border: `${highContrast ? '2px' : '1px'} solid var(--border-hairline)`,
+                  }}
+                >
+                  <ImageIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>Try 2012 sample</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleLoadSample('night-lights-2023')}
+                  aria-label="Try 2023 sample frame for Night Lights"
+                  className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap shrink-0 cursor-pointer transition-colors"
+                  style={{
+                    backgroundColor: 'var(--bg-surface)',
+                    color: 'var(--accent-primary)',
+                    border: `${highContrast ? '2px' : '1px'} solid var(--border-hairline)`,
+                  }}
+                >
+                  <ImageIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>Try 2023 sample</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={handleToggleCompareMode}
                   aria-pressed={compareMode}
                   aria-label="Toggle Compare mode for Night Lights 2012 and 2023"
@@ -851,24 +936,45 @@ export default function App() {
                 </button>
               </>
             ) : (
-              <button
-                type="button"
-                onClick={() =>
-                  openUploadDialogForSlot(
-                    selectedPresetId === 'lightning' ? 'lightning' : 'forest-height',
-                  )
-                }
-                aria-label={`Upload image for ${activePreset.shortLabel}`}
-                className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap shrink-0 cursor-pointer transition-colors"
-                style={{
-                  backgroundColor: 'var(--bg-surface)',
-                  color: 'var(--text-primary)',
-                  border: `${highContrast ? '2px' : '1px'} solid var(--border-hairline)`,
-                }}
-              >
-                <Upload className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>{activeSingleFrame ? 'Replace image' : 'Upload image'}</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() =>
+                    openUploadDialogForSlot(
+                      selectedPresetId === 'lightning' ? 'lightning' : 'forest-height',
+                    )
+                  }
+                  aria-label={`Upload image for ${activePreset.shortLabel}`}
+                  className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap shrink-0 cursor-pointer transition-colors"
+                  style={{
+                    backgroundColor: 'var(--bg-surface)',
+                    color: 'var(--text-primary)',
+                    border: `${highContrast ? '2px' : '1px'} solid var(--border-hairline)`,
+                  }}
+                >
+                  <Upload className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>{activeSingleFrame ? 'Replace image' : 'Upload image'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleLoadSample(
+                      selectedPresetId === 'lightning' ? 'lightning' : 'forest-height',
+                    )
+                  }
+                  aria-label={`Try a sample frame for ${activePreset.shortLabel}`}
+                  className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-lg text-sm font-medium whitespace-nowrap shrink-0 cursor-pointer transition-colors"
+                  style={{
+                    backgroundColor: 'var(--bg-surface)',
+                    color: 'var(--accent-primary)',
+                    border: `${highContrast ? '2px' : '1px'} solid var(--border-hairline)`,
+                  }}
+                >
+                  <ImageIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>Try a sample frame</span>
+                </button>
+              </>
             )}
 
             <button
@@ -1083,6 +1189,27 @@ export default function App() {
                         : 'forest-height',
                   )
                 }
+                sampleButtonLabel={
+                  selectedPresetId === 'night-lights'
+                    ? `Try ${effectiveSingleNightYear} sample frame`
+                    : 'Try a sample frame'
+                }
+                sampleAriaLabel={
+                  selectedPresetId === 'night-lights'
+                    ? `Try ${effectiveSingleNightYear} sample frame into stage for Night Lights`
+                    : `Try a sample frame into stage for ${activePreset.shortLabel}`
+                }
+                onRequestSample={() =>
+                  handleLoadSample(
+                    selectedPresetId === 'night-lights'
+                      ? effectiveSingleNightYear === '2012'
+                        ? 'night-lights-2012'
+                        : 'night-lights-2023'
+                      : selectedPresetId === 'lightning'
+                        ? 'lightning'
+                        : 'forest-height',
+                  )
+                }
                 onGridAnalyzed={setSingleGrid}
                 onSelectColumn={(col) => void handleSelectSingleColumn(col)}
                 onImageError={handleImageError}
@@ -1176,6 +1303,9 @@ export default function App() {
                       onRequestUpload={() =>
                         openUploadDialogForSlot('night-lights-2012')
                       }
+                      sampleButtonLabel="Try 2012 sample frame"
+                      sampleAriaLabel="Try 2012 sample frame into stage for Night Lights"
+                      onRequestSample={() => handleLoadSample('night-lights-2012')}
                       onGridAnalyzed={setCompareGrid2012}
                       onSelectColumn={(col) =>
                         void handleSelectCompareColumn(0, col)
@@ -1224,6 +1354,9 @@ export default function App() {
                       onRequestUpload={() =>
                         openUploadDialogForSlot('night-lights-2023')
                       }
+                      sampleButtonLabel="Try 2023 sample frame"
+                      sampleAriaLabel="Try 2023 sample frame into stage for Night Lights"
+                      onRequestSample={() => handleLoadSample('night-lights-2023')}
                       onGridAnalyzed={setCompareGrid2023}
                       onSelectColumn={(col) =>
                         void handleSelectCompareColumn(1, col)

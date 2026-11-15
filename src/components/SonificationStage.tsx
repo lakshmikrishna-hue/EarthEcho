@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Upload } from 'lucide-react';
+import { Image as ImageIcon, Upload } from 'lucide-react';
 import {
   C_MAJOR_PENTATONIC,
   DEFAULT_LIGHTNING_THRESHOLD,
@@ -28,6 +28,9 @@ interface SonificationStageProps {
   uploadButtonLabel?: string;
   uploadAriaLabel?: string;
   onRequestUpload?: () => void;
+  sampleButtonLabel?: string;
+  sampleAriaLabel?: string;
+  onRequestSample?: () => void;
   onGridAnalyzed: (grid: SonificationGrid | null) => void;
   onSelectColumn: (col: number) => void;
   onImageError?: (message: string) => void;
@@ -51,6 +54,9 @@ export const SonificationStage: React.FC<SonificationStageProps> = ({
   uploadButtonLabel = 'Upload image',
   uploadAriaLabel = 'Upload a NASA SVS image frame',
   onRequestUpload,
+  sampleButtonLabel = 'Try a sample frame',
+  sampleAriaLabel = 'Try a NASA SVS sample frame',
+  onRequestSample,
   onGridAnalyzed,
   onSelectColumn,
   onImageError,
@@ -355,22 +361,40 @@ export const SonificationStage: React.FC<SonificationStageProps> = ({
               >
                 Upload a NASA SVS frame to start
               </p>
-              {onRequestUpload && (
-                <button
-                  type="button"
-                  onClick={onRequestUpload}
-                  aria-label={uploadAriaLabel}
-                  className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors"
-                  style={{
-                    backgroundColor: 'var(--bg-surface-elevated)',
-                    color: 'var(--text-primary)',
-                    border: `${highContrast ? '2px' : '1px'} solid var(--border-strong)`,
-                  }}
-                >
-                  <Upload className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  <span>{uploadButtonLabel}</span>
-                </button>
-              )}
+              <div className="flex flex-wrap items-center justify-center gap-2.5">
+                {onRequestUpload && (
+                  <button
+                    type="button"
+                    onClick={onRequestUpload}
+                    aria-label={uploadAriaLabel}
+                    className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors"
+                    style={{
+                      backgroundColor: 'var(--bg-surface-elevated)',
+                      color: 'var(--text-primary)',
+                      border: `${highContrast ? '2px' : '1px'} solid var(--border-strong)`,
+                    }}
+                  >
+                    <Upload className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span>{uploadButtonLabel}</span>
+                  </button>
+                )}
+                {onRequestSample && (
+                  <button
+                    type="button"
+                    onClick={onRequestSample}
+                    aria-label={sampleAriaLabel}
+                    className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors"
+                    style={{
+                      backgroundColor: 'var(--bg-surface)',
+                      color: 'var(--accent-primary)',
+                      border: `${highContrast ? '2px' : '1px'} solid var(--accent-primary)`,
+                    }}
+                  >
+                    <ImageIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span>{sampleButtonLabel}</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
